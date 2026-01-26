@@ -1,0 +1,7 @@
+{
+  "pdb_id": "7WQ4",
+  "mb_comp": "POPC (75%) : cholesterol (25%)",
+  "sim_t": "60μs (2x 30μ replicas)" ,
+  "ns_params": "Big probe: 6Å; Small probe: 1.4Å"
+}
+

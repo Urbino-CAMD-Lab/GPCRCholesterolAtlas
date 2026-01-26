@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>A-GPCR cholesterol hot spots</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h1 { margin-top: 20px; }
+
+  /* ---------------- Horizontal Flyout Menu with Title ---------------- */
+  #allMenus {
+    display: flex;
+    gap: 20px;
+    align-items: start;
+  }
+
+  #systemMenuWrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0;
+    margin: 20px;
+    padding: 8px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    background-color: #fafafa;
+  }
+
+  #menuTitle {
+    font-weight: bold;
+    padding: 4px 12px;
+    border-right: 2px solid #ccc;
+    margin-right: 8px;
+    white-space: nowrap;
+  }
+
+  #systemMenuContainer,
+  #systemMenuContainer2 {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    font-family: Arial, sans-serif;
+    flex-wrap: wrap;
+  }
+
+  .menu-item {
+    position: relative;
+    padding: 4px 8px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .menu-item span {
+    color: #000;
+  }
+
+  .menu-item.greyed span {
+    color: #999;
+  }
+
+  .menu-item.pdb span {
+    color: #d35400;
+    font-weight: bold;
+  }
+
+  .menu-item.has-children > span::after {
+    content: " ▶";
+    font-size: 0.8em;
+    margin-left: 4px;
+  }
+
+  .submenu {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    min-width: 140px;
+    z-index: 10;
+    flex-direction: column;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+  }
+
+  .submenu.open-left {
+    left: auto;
+    right: 100%;
+  }
+
+  .submenu .menu-item {
+    padding: 4px 8px;
+  }
+
+  .menu-item span:hover {
+    background-color: rgba(0,0,0,0.05);
+    border-radius: 4px;
+  }
+
+  /* ---------------- GPCR Tree Container ---------------- */
+  #gpcrTreeContainer {
+    width: 80vmin;
+    height: 80vmin;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .node circle {
+    stroke: steelblue;
+    stroke-width: 1.5px;
+  }
+
+  .node text {
+    font: 12px sans-serif;
+  }
+
+  .link {
+    fill: none;
+    stroke: #999;
+    stroke-width: 1.2px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Library of class A GPCR cholesterol hot spots</h1>
+
+<div id="allMenus">
+  <div id="systemMenuWrapper">
+    <div id="menuTitle">Analysis by structure</div>
+    <div id="systemMenuContainer"></div>
+  </div>
+
+  <div id="systemMenuWrapper">
+    <div id="menuTitle">Analysis by families</div>
+    <div id="systemMenuContainer2"></div>
+  </div>
+</div>
+
+<div id="gpcrTreeContainer"></div>
+
+<script>
+/* ---------------- GPCR TREE DATA ---------------- */
+const gpcrData = {
+  name: "Class A (Rhodopsin)",
+  children: [
+    { name: "Aminergic", children: [
+        { name: "5-Hydroxytryptamine", children: [
+            { name: "5-HT1A", pdb: ["7E2Y"] },
+            { name: "5-HT1D", pdb: ["7E32"] },
+            { name: "5-HT2A", pdb: ["7WC4"] },
+            { name: "5-HT2B", pdb: ["6DRZ"] },
+            { name: "5-HT2C", pdb: ["8DPF"] },
+            { name: "5-HT4", pdb: ["7XT8"] },
+            { name: "5-HT7", pdb: ["7XTC"] }
+        ]},
+        { name: "Adrenergic", children: [
+            { name: "β1", pdb: ["7BU6","7BVQ"] },
+            { name: "β2", pdb: ["5JQH","6PS4"] }
+        ]},
+        { name: "Dopamine", children: [
+            { name: "D1", pdb: ["7CKW","7CKZ","7JVQ","7X2C"] }
+        ]}
+    ]},
+    { name: "Peptide", children: [
+        { name: "Opioid", children: [
+            { name: "δ", pdb: ["6PT2"] },
+            { name: "κ", pdb: ["6B73","6VI4"] },
+            { name: "μ", pdb: ["8EF5","8EF6"] }
+        ]},
+        { name: "Bradykinin", children: [{ name: "B2", pdb: ["7F6H","7F6I"] }]},
+        { name: "Formylpeptide", children: [
+            { name: "FPR1", pdb: ["7EUO"] },
+            { name: "FPR2/ALX", pdb: ["6LW5"] }
+        ]},
+        { name: "Galanin", children: [
+            { name: "GAL1", pdb: ["7WQ3"] },
+            { name: "GAL2", pdb: ["7WQ4"] }
+        ]},
+        { name: "Ghrelin", children: [
+            { name: "Ghrelin", pdb: ["7F9Y","7W2Z"] }
+        ]},
+        { name: "Somatostatin", children: [
+            { name: "SST2", pdb: ["7YAE","7Y27"] }
+        ]}
+    ]},
+    { name: "Protein", children: [
+        { name: "Chemokine", children: [
+            { name: "CCR1", pdb: ["7VL8","7VLA"] },
+            { name: "CXCR1", pdb: ["7XBW","7XBX"] },
+            { name: "ACKR3", pdb: ["7SK3","7SK8"] }
+        ]},
+        { name: "Glycoprotein hormone", children: [
+            { name: "TSH", pdb: ["7XW5","7XW6"] }
+        ]}
+    ]},
+    { name: "Lipid", children: [
+        { name: "Cannabinoid", children: [
+            { name: "CB1", pdb: ["5XR8","7FEE","7V3Z"] },
+            { name: "CB2", pdb: ["6PT0"] }
+        ]}
+    ]},
+    { name: "Melatonin", children: [
+        { name: "Melatonin", children: [
+            { name: "MT1", pdb: ["7VGY","7VGZ"] }
+        ]}
+    ]},
+    { name: "Nucleotide", children: [
+        { name: "Adenosine", children: [
+            { name: "A2A", pdb: ["8CU7","8DU3"] },
+            { name: "A2B", pdb: ["8HDO","8HDP"] }
+        ]},
+        { name: "P2Y", children: [
+            { name: "P2Y1", pdb: ["4XNV"] },
+            { name: "P2Y12", pdb: ["4PXZ"] }
+        ]}
+    ]},
+    { name: "Steroid", children: [
+        { name: "Bile acid", children: [
+            { name: "GPBA", pdb: ["7CFM","7CFN"] }
+        ]}
+    ]},
+    { name: "MAS-related", children: [
+        { name: "MRGPR", children: [
+            { name: "MRGPRX2", pdb: ["7VV4","7VV5"] }
+        ]}
+    ]},
+    { name: "Orphan", children: [
+        { name: "Orphan", children: [
+            { name: "GPR35", pdb: ["8H8J"] },
+            { name: "GPR88", pdb: ["7EJX"] }
+        ]}
+    ]}
+]};
+
+/* ---------------- EXPAND PDB NODES ---------------- */
+function expandPDBs(node) {
+  if (node.pdb) {
+    node.children = node.children || [];
+    node.pdb.forEach(pdbId => node.children.push({ name: pdbId, isPDB: true }));
+    delete node.pdb;
+  }
+  if (node.children) node.children.forEach(expandPDBs);
+}
+expandPDBs(gpcrData);
+
+/* ---------------- COUNT PDBs PER NODE ---------------- */
+function countPDBs(node) {
+  if (node.isPDB) return 1;
+  let sum = 0;
+  if (node.children) node.children.forEach(c => sum += countPDBs(c));
+  node.pdbCount = sum;  // store directly on node
+  return sum;
+}
+countPDBs(gpcrData);
+
+/* ---------------- HELPERS ---------------- */
+function sanitizeName(name) {
+  return name
+    .toLowerCase()
+    .replace(/\(.*?\)/g, "")
+    .trim()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_]/g, "");
+}
+
+function preventOverflow(submenu) {
+  const rect = submenu.getBoundingClientRect();
+  if (rect.right > window.innerWidth) submenu.classList.add("open-left");
+  else submenu.classList.remove("open-left");
+}
+
+/* ---------------- FILTER DATA FOR FAMILY MENU ---------------- */
+function cloneWithoutPDB(node, parent = null) {
+  const newNode = { name: node.name, parent, pdbCount: node.pdbCount }; // propagate pdbCount
+  if (node.children) {
+    const kids = node.children
+      .filter(c => !c.isPDB)
+      .map(c => cloneWithoutPDB(c, newNode));
+    if (kids.length) newNode.children = kids;
+  }
+  return newNode;
+}
+
+
+/* ---------------- FIRST MENU (STRUCTURE) ---------------- */
+function buildHorizontalMenu(node, parent = null) {
+  node.parent = parent;
+
+  const item = document.createElement("div");
+  item.className = "menu-item";
+  if (node.isPDB) item.classList.add("pdb");
+  if (node.children) item.classList.add("has-children");
+
+  const label = document.createElement("span");
+  label.textContent = node.name;
+  item.appendChild(label);
+
+  if (node.isPDB) {
+    label.onclick = (e) => {
+      window.open("system.html?system=" + node.name.toLowerCase(), "_blank");
+      e.stopPropagation();
+    };
+  }
+
+  if (node.children) {
+    const submenu = document.createElement("div");
+    submenu.className = "submenu";
+
+    if (!parent) {
+      label.addEventListener("click", e => {
+        submenu.style.display =
+          submenu.style.display === "flex" ? "none" : "flex";
+        preventOverflow(submenu);
+        e.stopPropagation();
+      });
+    } else {
+      item.addEventListener("mouseenter", () => { submenu.style.display = "flex"; preventOverflow(submenu); });
+      item.addEventListener("mouseleave", () => submenu.style.display = "none");
+    }
+
+    node.children.forEach(child =>
+      submenu.appendChild(buildHorizontalMenu(child, node))
+    );
+
+    item.appendChild(submenu);
+  }
+
+  return item;
+}
+
+/* ---------------- SECOND MENU (FAMILIES) ---------------- */
+function buildFamilyMenu(node) {
+  const item = document.createElement("div");
+  item.className = "menu-item";
+  if (node.children) item.classList.add("has-children");
+
+  const label = document.createElement("span");
+  label.textContent = node.name;
+  item.appendChild(label);
+
+  const passes = (node.name === "Aggregated data (open)") || (node.pdbCount >= 4);
+  if (!passes) item.classList.add("greyed");
+
+  if (passes && node.name !== "Aggregated data (open)") {
+    label.addEventListener("click", e => {
+      const family = sanitizeName(node.name);
+      window.open(`aggregated.html?family=${family}`, "_blank");
+      e.stopPropagation();
+    });
+  }
+
+  if (node.children) {
+    const submenu = document.createElement("div");
+    submenu.className = "submenu";
+
+    if (node.name === "Aggregated data (open)") {
+      label.addEventListener("click", e => {
+        submenu.style.display =
+          submenu.style.display === "flex" ? "none" : "flex";
+        preventOverflow(submenu);
+        e.stopPropagation();
+      });
+    } else {
+      item.addEventListener("mouseenter", () => { submenu.style.display = "flex"; preventOverflow(submenu); });
+      item.addEventListener("mouseleave", () => submenu.style.display = "none");
+    }
+
+    node.children.forEach(child =>
+      submenu.appendChild(buildFamilyMenu(child))
+    );
+
+    item.appendChild(submenu);
+  }
+
+  return item;
+}
+
+/* ---------------- INITIALIZE MENUS ---------------- */
+document.getElementById("systemMenuContainer")
+  .appendChild(buildHorizontalMenu(gpcrData));
+
+const classAData = cloneWithoutPDB(gpcrData);
+const aggregatedRoot = { name: "Aggregated data (open)", children: [classAData] };
+
+document.getElementById("systemMenuContainer2")
+  .appendChild(buildFamilyMenu(aggregatedRoot));
+
+/* ---------------- D3 RADIAL TREE ---------------- */
+function renderTree() {
+    const container = document.getElementById("gpcrTreeContainer");
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    const radius = Math.min(width, height) / 2 - 20;
+
+    const tree = d3.tree()
+        .size([2 * Math.PI, radius])
+        .separation((a, b) => {
+            if (a.depth === b.depth && a.depth > 4) return 12.0;
+            if (a.parent === b.parent) return 6.0;
+            return 3.5;
+        });
+
+    const root = d3.hierarchy(gpcrData);
+    tree(root);
+    container.innerHTML = "";
+
+    const svg = d3.select("#gpcrTreeContainer")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    const g = svg.append("g");
+
+    const zoom = d3.zoom()
+        .scaleExtent([0.2, 6])
+        .on("zoom", (event) => { g.attr("transform", event.transform); });
+    svg.call(zoom);
+
+    const initialTransform = d3.zoomIdentity.translate(width / 2, height / 2).scale(0.5);
+    svg.call(zoom.transform, initialTransform);
+
+    g.selectAll("path.link")
+        .data(root.links())
+        .join("path")
+        .attr("class", "link")
+        .attr("d", d3.linkRadial()
+            .angle(d => d.x)
+            .radius(d => d.y)
+        );
+
+    const node = g.selectAll("g.node")
+        .data(root.descendants())
+        .join("g")
+        .attr("class", "node")
+        .attr("transform", d =>
+            `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`
+        );
+
+    node.append("circle")
+        .attr("r", 7)
+        .style("fill", d => d.data.isPDB ? "#ff7f0e" : "#69b3a2")
+        .style("cursor", d => d.data.isPDB ? "pointer" : "default")
+        .on("click", (event, d) => {
+            if (d.data.isPDB) {
+                const pdbLower = d.data.name.toLowerCase();
+                window.open("system.html?system=" + pdbLower, "_blank");
+            }
+        });
+
+    node.append("text")
+        .attr("dy", "0.31em")
+        .attr("x", d => (d.x < Math.PI ? 22 : -22))
+        .attr("text-anchor", d => (d.x < Math.PI ? "start" : "end"))
+        .attr("transform", d => (d.x >= Math.PI ? "rotate(180)" : null))
+        .text(d => d.data.name)
+        .style("fill", d => d.data.isPDB ? "#d35400" : "#000")
+        .style("cursor", d => d.data.isPDB ? "pointer" : "default")
+        .style("font-size", "14px")
+        .on("click", (event, d) => {
+            if (d.data.isPDB) {
+                const pdbLower = d.data.name.toLowerCase();
+                window.open("system.html?system=" + pdbLower, "_blank");
+            }
+        });
+}
+
+renderTree();
+window.addEventListener("resize", renderTree);
+</script>
+
+</body>
+</html>
+

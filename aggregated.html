@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Aggregated Data</title>
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+  html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; background: #f9f9f9; }
+  body { display: flex; flex-direction: column; }
+
+  #main-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    gap: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  .card {
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    border: 1px solid #ddd;
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .card-header {
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .viewer-column {
+    flex: 1 1 50%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    position: relative;
+  }
+
+  .viewer-box {
+    flex: 1 1 0;
+    background: black;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  .inner-stage {
+    width: 100%;
+    height: 100%;
+  }
+
+  .view-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    z-index: 50;
+  }
+  .view-controls button {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 4px;
+    color: white;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .view-controls button:hover { background: rgba(255,255,255,0.3); }
+
+  .right-column {
+    flex: 1 1 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: auto;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table th, table td { padding: 6px; border: 1px solid #ddd; text-align: left; vertical-align: top; }
+  thead th { background: #f6f6f6; font-weight: 600; }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .download-btn:hover { background: #ddd; }
+
+  @media (max-width: 900px) {
+    .card { flex-direction: column; }
+    .viewer-column, .right-column { flex: 1 1 auto; width: 100%; }
+  }
+</style>
+</head>
+
+<body>
+
+<div id="main-container">
+
+  <!-- Top half card -->
+  <div class="card" id="top-card">
+    <div class="viewer-column">
+      <div class="card-header">Hot Spots Viewer</div>
+      <div class="viewer-box">
+        <div id="hotspots-stage" class="inner-stage"></div>
+        <div class="view-controls" id="hotspots-controls">
+          <button id="hotspots-top"><i class="material-icons">visibility</i> Top View</button>
+          <button id="hotspots-side"><i class="material-icons">visibility</i> Side View</button>
+        </div>
+      </div>
+    </div>
+    <div class="right-column" id="hotspots-table-container">
+      <div class="card-header">
+        HotSpots Table
+        <button id="download-hotspots-csv" class="download-btn">
+          <i class="material-icons">download</i> Download Full Table
+        </button>
+      </div>
+      <table id="hotspots-table"><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <!-- Bottom half card -->
+  <div class="card" id="bottom-card">
+    <div class="viewer-column">
+      <div class="card-header">NanoShaper Pockets Viewer</div>
+      <div class="viewer-box">
+        <div id="nspockets-stage" class="inner-stage"></div>
+        <div class="view-controls" id="nspockets-controls">
+          <button id="nspockets-top"><i class="material-icons">visibility</i> Top View</button>
+          <button id="nspockets-side"><i class="material-icons">visibility</i> Side View</button>
+        </div>
+      </div>
+    </div>
+    <div class="right-column" id="pockets-table-container">
+      <div class="card-header">
+        NSPockets Table
+        <button id="download-pockets-csv" class="download-btn">
+          <i class="material-icons">download</i> Download Full Table
+        </button>
+      </div>
+      <table id="pockets-table"><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ngl@2.4.0/dist/ngl.js"></script>
+
+<script>
+(function(){
+
+  const params = new URLSearchParams(window.location.search);
+  const nodeUrlName = params.get("family") || "class_a";
+
+  const hotspotsCSVPath = `/static/data/aggregated/${nodeUrlName}/${nodeUrlName}_hot_spots.csv`;
+  const pocketsCSVPath  = `/static/data/aggregated/${nodeUrlName}/${nodeUrlName}_pockets.csv`;
+  const hotspotsResiduesPath = `/static/data/aggregated/${nodeUrlName}/ngl_hotspots.txt`;
+  const pocketsResiduesPath  = `/static/data/aggregated/${nodeUrlName}/ngl_pockets.txt`;
+  const structureFile   = `/static/data/aggregated/generic_gpcr.pdb`;
+
+  let hotspotsResidues = [];
+  let pocketsResidues = [];
+
+  /* ---------------- VIEWERS ---------------- */
+  function createViewer(stageId, topBtnId, sideBtnId, highlightResidues=false, residuesList=[]){
+    const container = document.getElementById(stageId);
+    const stage = new NGL.Stage(container, { backgroundColor: "black" });
+
+    stage.loadFile(structureFile, { defaultRepresentation: false }).then(comp => {
+
+      if(highlightResidues){
+        const selectionStr = residuesList.join(" ");
+        comp.addRepresentation("surface", {
+          sele: selectionStr,
+          color: 0xDE1D1D, // red
+          opacity: 1,
+          surfaceType: "av"
+        });
+        comp.addRepresentation("surface", {
+          sele: `not (${selectionStr})`,
+          color: 0xC0C0C0, // silver
+          opacity: 1,
+          surfaceType: "av"
+        });
+      } else {
+        comp.addRepresentation("surface", {opacity:1,color:"silver",surfaceType:"av"});
+      }
+
+      comp.autoView();
+
+      // starting side view (-90º X rotation)
+      const startMat = new NGL.Matrix4().makeRotationX(-Math.PI / 2);
+      const startOrientation = stage.viewerControls.getOrientation().clone().multiply(startMat);
+      stage.viewerControls.orient(startOrientation);
+
+      // top view rotation
+      const topMat = new NGL.Matrix4().makeRotationX(Math.PI/2);
+      const topOrientation = startOrientation.clone().multiply(topMat);
+
+      document.getElementById(topBtnId).onclick = () => stage.viewerControls.orient(topOrientation);
+      document.getElementById(sideBtnId).onclick = () => stage.viewerControls.orient(startOrientation);
+
+    }).catch(err => console.error("Failed to load structure:", err));
+
+    const resizeObserver = new ResizeObserver(() => stage.handleResize());
+    resizeObserver.observe(container);
+
+    return stage;
+  }
+
+  // Load hotspots residues and create viewer
+  fetch(hotspotsResiduesPath)
+    .then(r => r.text())
+    .then(text => {
+      hotspotsResidues = text.trim().split(/\s+/);
+      window.hotspotsViewer = createViewer("hotspots-stage","hotspots-top","hotspots-side",true,hotspotsResidues);
+    })
+    .catch(e => console.error("Failed to load HotSpots residues:", e));
+
+  // Load pockets residues and create viewer
+  fetch(pocketsResiduesPath)
+    .then(r => r.text())
+    .then(text => {
+      pocketsResidues = text.trim().split(/\s+/);
+      window.nspocketsViewer = createViewer("nspockets-stage","nspockets-top","nspockets-side",true,pocketsResidues);
+    })
+    .catch(e => console.error("Failed to load NSPockets residues:", e));
+
+  /* ---------------- CSV LOADING ---------------- */
+  async function loadCSV(containerId, tableId, csvPath, maxRows){
+    try{
+      const response = await fetch(csvPath);
+      if(!response.ok) throw new Error("CSV not found");
+      const text = await response.text();
+      const rows = text.trim().split("\n").map(r => r.split(","));
+
+      const container = document.getElementById(containerId);
+      const tableThead = document.querySelector(`#${tableId} thead`);
+      const tableTbody = document.querySelector(`#${tableId} tbody`);
+
+      tableThead.innerHTML = "";
+      tableTbody.innerHTML = "";
+
+      // Header
+      const headerRow = document.createElement("tr");
+      rows[0].forEach(h => { const th = document.createElement("th"); th.textContent = h; headerRow.appendChild(th); });
+      tableThead.appendChild(headerRow);
+
+      // Limit number of rows
+      const displayRows = rows.slice(1, maxRows + 1);
+      displayRows.forEach(row => {
+        const tr = document.createElement("tr");
+        row.forEach(cell => { const td = document.createElement("td"); td.textContent = cell; tr.appendChild(td); });
+        tableTbody.appendChild(tr);
+      });
+    } catch(e){
+      console.error("Failed to load CSV:", e);
+    }
+  }
+
+  loadCSV("hotspots-table-container", "hotspots-table", hotspotsCSVPath, 30);
+  loadCSV("pockets-table-container", "pockets-table", pocketsCSVPath, 10);
+
+  /* ---------------- CSV DOWNLOAD ---------------- */
+  document.getElementById("download-hotspots-csv").onclick = () => {
+    const a = document.createElement("a");
+    a.href = hotspotsCSVPath;
+    a.download = `${nodeUrlName}_hot_spots.csv`;
+    a.click();
+  };
+  document.getElementById("download-pockets-csv").onclick = () => {
+    const a = document.createElement("a");
+    a.href = pocketsCSVPath;
+    a.download = `${nodeUrlName}_pockets.csv`;
+    a.click();
+  };
+
+})();
+</script>
+
+</body>
+</html>
+

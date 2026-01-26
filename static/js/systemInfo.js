@@ -19,7 +19,7 @@
     const contentDiv = systemTab.querySelector(".data-tab-content");
     if(!contentDiv) return;
 
-    const jsonFile = `/static/data/${pdb_id}/system_info.json`;
+    const jsonFile = `static/data/${pdb_id}/system_info.json`;
 
     fetch(jsonFile)
         .then(resp => {

@@ -181,11 +181,11 @@
   const params = new URLSearchParams(window.location.search);
   const nodeUrlName = params.get("family") || "class_a";
 
-  const hotspotsCSVPath = `/static/data/aggregated/${nodeUrlName}/${nodeUrlName}_hot_spots.csv`;
-  const pocketsCSVPath  = `/static/data/aggregated/${nodeUrlName}/${nodeUrlName}_pockets.csv`;
-  const hotspotsResiduesPath = `/static/data/aggregated/${nodeUrlName}/ngl_hotspots.txt`;
-  const pocketsResiduesPath  = `/static/data/aggregated/${nodeUrlName}/ngl_pockets.txt`;
-  const structureFile   = `/static/data/aggregated/generic_gpcr.pdb`;
+  const hotspotsCSVPath = `static/data/aggregated/${nodeUrlName}/${nodeUrlName}_hot_spots.csv`;
+  const pocketsCSVPath  = `static/data/aggregated/${nodeUrlName}/${nodeUrlName}_pockets.csv`;
+  const hotspotsResiduesPath = `static/data/aggregated/${nodeUrlName}/ngl_hotspots.txt`;
+  const pocketsResiduesPath  = `static/data/aggregated/${nodeUrlName}/ngl_pockets.txt`;
+  const structureFile   = `static/data/aggregated/generic_gpcr.pdb`;
 
   let hotspotsResidues = [];
   let pocketsResidues = [];

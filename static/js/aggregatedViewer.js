@@ -14,7 +14,7 @@
         return;
     }
 
-    const baseStatic = `/static/data/${pdb_id}`;
+    const baseStatic = `static/data/${pdb_id}`;
     const aaUrl = `${baseStatic}/${pdb_id}_aa.pdb`;
     const hotspotsUrl = `${baseStatic}/${pdb_id}_hot_spots.pdb`;
 

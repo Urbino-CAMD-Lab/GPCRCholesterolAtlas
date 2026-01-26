@@ -8,7 +8,7 @@
     const pdb_id = qs("system") || qs("pdb");
     if (!pdb_id) return;
 
-    const baseStatic = `/static/data/${pdb_id}`;
+    const baseStatic = `static/data/${pdb_id}`;
 
     const downloads = [
         {

@@ -14,7 +14,7 @@
         return;
     }
 
-    const baseStatic = `/static/data/${pdb_id}`;
+    const baseStatic = `static/data/${pdb_id}`;
     const replicas = {
         1: { pdb: `${baseStatic}/${pdb_id}_rep_1.pdb`, xtc: `${baseStatic}/${pdb_id}_rep_1.xtc` },
         2: { pdb: `${baseStatic}/${pdb_id}_rep_2.pdb`, xtc: `${baseStatic}/${pdb_id}_rep_2.xtc` }

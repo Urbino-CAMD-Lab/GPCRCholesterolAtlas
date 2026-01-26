@@ -12,7 +12,7 @@
         return;
     }
 
-    const nanoDir = `/static/data/${pdb_id}/nanoshaper`;
+    const nanoDir = `static/data/${pdb_id}/nanoshaper`;
     const nsPDB = `${nanoDir}/${pdb_id}_nanoshaper.pdb`;
     const pocketsCSV = `${nanoDir}/${pdb_id}_ranked_pockets.csv`;
 
@@ -205,7 +205,7 @@
     const btn = document.getElementById("download-pockets-csv");
     if(!btn) return;
 
-    const csvUrl = `/static/data/${pdb_id}/nanoshaper/${pdb_id}_ranked_pockets.csv`;
+    const csvUrl = `static/data/${pdb_id}/nanoshaper/${pdb_id}_ranked_pockets.csv`;
 
     btn.addEventListener("click", () => {
         const a = document.createElement("a");

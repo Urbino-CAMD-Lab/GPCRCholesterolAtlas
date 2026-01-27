@@ -128,7 +128,7 @@
   <!-- Top half card -->
   <div class="card" id="top-card">
     <div class="viewer-column">
-      <div class="card-header">Hot Spots Viewer</div>
+      <div class="card-header">Detected Hot Spots Viewer</div>
       <div class="viewer-box">
         <div id="hotspots-stage" class="inner-stage"></div>
         <div class="view-controls" id="hotspots-controls">
@@ -139,7 +139,7 @@
     </div>
     <div class="right-column" id="hotspots-table-container">
       <div class="card-header">
-        HotSpots Table
+        Detected Hot Spots Table
         <button id="download-hotspots-csv" class="download-btn">
           <i class="material-icons">download</i> Download Full Table
         </button>
@@ -151,7 +151,7 @@
   <!-- Bottom half card -->
   <div class="card" id="bottom-card">
     <div class="viewer-column">
-      <div class="card-header">NanoShaper Pockets Viewer</div>
+      <div class="card-header">Detected Pockets Viewer</div>
       <div class="viewer-box">
         <div id="nspockets-stage" class="inner-stage"></div>
         <div class="view-controls" id="nspockets-controls">
@@ -162,7 +162,7 @@
     </div>
     <div class="right-column" id="pockets-table-container">
       <div class="card-header">
-        NSPockets Table
+        Detected Pockets Table
         <button id="download-pockets-csv" class="download-btn">
           <i class="material-icons">download</i> Download Full Table
         </button>
@@ -183,6 +183,13 @@
 
   const hotspotsCSVPath = `static/data/aggregated/${nodeUrlName}/${nodeUrlName}_hot_spots.csv`;
   const pocketsCSVPath  = `static/data/aggregated/${nodeUrlName}/${nodeUrlName}_pockets.csv`;
+  const tm1Res = `static/data/aggregated/tm1_res.txt`;
+  const tm2Res = `static/data/aggregated/tm2_res.txt`;
+  const tm3Res = `static/data/aggregated/tm3_res.txt`;
+  const tm4Res = `static/data/aggregated/tm4_res.txt`;  
+  const tm5Res = `static/data/aggregated/tm5_res.txt`;  
+  const tm6Res = `static/data/aggregated/tm6_res.txt`;  
+  const tm7Res = `static/data/aggregated/tm7_res.txt`;  
   const hotspotsResiduesPath = `static/data/aggregated/${nodeUrlName}/ngl_hotspots.txt`;
   const pocketsResiduesPath  = `static/data/aggregated/${nodeUrlName}/ngl_pockets.txt`;
   const structureFile   = `static/data/aggregated/generic_gpcr.pdb`;
@@ -237,6 +244,7 @@
     return stage;
   }
 
+  
   // Load hotspots residues and create viewer
   fetch(hotspotsResiduesPath)
     .then(r => r.text())
@@ -253,7 +261,7 @@
       pocketsResidues = text.trim().split(/\s+/);
       window.nspocketsViewer = createViewer("nspockets-stage","nspockets-top","nspockets-side",true,pocketsResidues);
     })
-    .catch(e => console.error("Failed to load NSPockets residues:", e));
+    .catch(e => console.error("Failed to load Pockets residues:", e));
 
   /* ---------------- CSV LOADING ---------------- */
   async function loadCSV(containerId, tableId, csvPath, maxRows){

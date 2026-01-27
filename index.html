@@ -14,7 +14,48 @@
     align-items: center;
   }
 
+  /* ---------------- Main page title, authors and page description ---------------- */
   h1 { margin-top: 20px; }
+  
+  #titleBackground {
+    width: 100vw;
+    background-color: #f5f5f5;
+    padding: 24px 0 20px 0;
+    margin-bottom: 16px;
+  }
+
+  #titleBackground > * {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  
+  #authors,
+  #affiliations {
+    text-align: center;
+    margin-top: 6px;
+    font-size: 16px;
+  }
+
+  #affiliations {
+    font-style: italic;
+  }
+
+  #pageDescription {
+    max-width: 1200px;
+    text-align: justify;
+    margin: 16px auto 24px auto;
+    padding: 20px 40px;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+  
+  #pageDescription {
+    background-color: #f2f2f2;  
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
 
   /* ---------------- Horizontal Flyout Menu with Title ---------------- */
   #allMenus {
@@ -132,12 +173,73 @@
     stroke: #999;
     stroke-width: 1.2px;
   }
+
+  #referencesContainer {
+    max-width: 900px;
+    margin: 32px auto 16px auto;
+    padding: 16px 24px;
+    background-color: #f2f2f2;  
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  #referencesContainer h2 {
+    margin-top: 0;
+    font-size: 18px;
+    text-align: center;
+  }  
+
+  #referencesContainer ul {
+    padding-left: 20px;
+    margin-bottom: 0;
+  }
+
+  #referencesContainer li {
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  #pageFooter {
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    padding: 12px 0 16px 0;
+    color: #444;
+  }
+
+  #pageFooter a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+
+  #pageFooter a:hover {
+    text-decoration: underline;
+  }
+
 </style>
 </head>
 
 <body>
+<div id="titleBackground">
+  <h1>Database on cholesterol binding in class A GPCRs</h1>
+  <div id="authors">David Sotillo Núñez <sup>a</sup>, Giovanni Bottegoni <sup>a</sup></div>
+  <div id="affiliations">
+    <sup>a</sup> <b>Università degli Studi di Urbino Carlo Bo</b> - Dipartimento di Scienze Biomolecolari. <i>Campus Scientifico Enrico Mattei, Via Ca' Le Suore, 2/4, 61029 Urbino, ITALY.</i>
+  </div>
+</div>  
 
-<h1>Library of class A GPCR cholesterol hot spots</h1>
+<p id="pageDescription">
+  This is a comprehensive platform on cholesterol binding data in class A <b>G protein-coupled receptors</b> obtained
+  through the analysis of <b>coarse-grained molecular dynamics (CG-MD)</b> using the <b>Martini 3 force field</b> <sup>1</sup>.
+  We include two different approaches for data visualization: Inspection of the data on individual structures and aggregated data based on family groupings.
+  Note that only those groups and sub-groups containint 4 or more structures are eligible for aggregated visualization, the rest are greyed out in the menu.
+  The pockets displayed here were detected using the <b>NanoShaper</b> software </sup>2</sup>, available online in their <a href="https://nanoshaperweb.iit.it/">NanoShaper web platform</a>.
+  The protein residues are identified using their own residue ID in the original PDB structure for the individual systems.
+  For both, individual systems and aggregated data we provide the <b>Ballesteros-Weinstein generic residue annotation</b> for class A GPCRs, which uses the format H.NN,
+  where H states the helix where the residue is located and NN how far a residue is from the most conserved residue in that helix (e.g. 4.50 is the most conserved residue in helix 4)
+   <sup>3</sup>. Results on individual structures can be accessed by clicking on the desired PDB id in the interactive tree below or by navigating the menu. Available aggregated results can be reached by clicking on the relevant groups on the corresponding menu below (Unavaiable entries with not enough data are greyed out).
+</p>
 
 <div id="allMenus">
   <div id="systemMenuWrapper">
@@ -482,6 +584,23 @@ function renderTree() {
 renderTree();
 window.addEventListener("resize", renderTree);
 </script>
+
+<div id="referencesContainer">
+  <h2>References</h2>
+  <ul>
+    <li>1. <b>Souza, P. C. T. et al.</b> Martini 3: a general purpose force field for coarse-grained molecular dynamics. <i>Nat Methods 18, 382–388</i> (2021).</li>
+    <li>2. <b>Decherchi, S., Spitaleri, A., Stone, J. & Rocchia, W.</b> NanoShaper–VMD interface: computing and visualizing surfaces, pockets and channels in molecular systems. <i>Bioinformatics 35, 1241–1243</i> (2019).</li>
+        <li>3. <b>Ballesteros, J. A. & Weinstein, H.</b> Integrated methods for the construction of three-dimensional models and computational probing of structure-function relations in G protein-coupled receptors. <i>Methods in Neurosciences 25, 366–428</i> (1995).</li>
+
+  </ul>
+</div>
+
+<footer id="pageFooter">
+  <span>[UNIVERSITY LAB INFO]</span>
+  &nbsp;|&nbsp;
+  <a href="https://github.com/YOUR-GITHUB" target="_blank">GitHub</a>
+</footer>
+
 
 </body>
 </html>
